@@ -27,22 +27,36 @@ DSH 插件是包含两半的 npm 包：
 
 > 需要 DSH 的 Web profile。默认 Web profile 位于 `~/.dsh/profiles/web/`。
 
-### 1. 获取源码
+### 快速安装（推荐）
+
+```bash
+dsh plugin --profile web add dsh-git-status
+```
+
+这会从 npm 把包装进 profile，并自动把它对账进 profile 的 bundle 列表——包声明了 `dsh.bundle`，正是 `dsh plugin add` 扫描的字段。需要 [pnpm](https://pnpm.io) 在 `PATH` 上（`dsh plugin` 在 profile 目录内转发给 pnpm）。
+
+然后重启并刷新：
+
+```bash
+npm exec @deepseek-ai/dsh web
+```
+
+打开 `http://127.0.0.1:3080`。要固定默认仓库，在 `~/.dsh/profiles/web/cordis.patch.yml` 里加（bundle 已自带该行，这里只覆盖它的 `config`）：
+
+```yaml
+- id: git-status
+  config:
+    repoPath: /absolute/path/to/your/default/repo
+```
+
+### 从源码安装
 
 ```bash
 git clone https://github.com/weiyuou-chowbus/dsh-git-status.git
-# 也可以把解压后的包放到任意位置，例如 ~/dsh-git-status
-```
-
-### 2. 软链到你的 profile 的 `node_modules`
-
-```bash
 ln -sfn "$(pwd)/dsh-git-status" ~/.dsh/profiles/web/node_modules/dsh-git-status
 ```
 
-### 3. 在 `cordis.patch.yml` 中启用
-
-编辑 `~/.dsh/profiles/web/cordis.patch.yml`，加入一条 `insert` 配置：
+然后在 `~/.dsh/profiles/web/cordis.patch.yml` 里加该行：
 
 ```yaml
 # ~/.dsh/profiles/web/cordis.patch.yml
@@ -53,15 +67,9 @@ ln -sfn "$(pwd)/dsh-git-status" ~/.dsh/profiles/web/node_modules/dsh-git-status
         repoPath: /absolute/path/to/your/default/repo
 ```
 
+用 `npm exec @deepseek-ai/dsh web` 重启并刷新 `http://127.0.0.1:3080`。
+
 - `repoPath` 是当前会话没有工作区 `cwd` 时的**兜底**仓库路径。省略时，插件会回退到 DSH 进程的工作目录。
-
-### 4. 重启
-
-```bash
-npm exec @deepseek-ai/dsh web
-```
-
-然后刷新 `http://127.0.0.1:3080`。
 
 ## 配置
 
@@ -85,6 +93,21 @@ npm exec @deepseek-ai/dsh web
 - **分支白名单** — 切换目标必须匹配 `git for-each-ref refs/heads` 枚举出的本地分支。分支名在通过该校验之前绝不会传给 git。
 - **副作用仅限 POST** — 读接口只接受 `GET`/`HEAD`；切换接口是 `POST`，否则返回 `405`。
 - **脏状态默认阻止** — 有未提交改动时，切换分支必须显式传 `stash: true`。
+
+## 发布
+
+本包以 [`dsh-git-status`](https://www.npmjs.com/package/dsh-git-status) 发布到 npm。发布新版本：
+
+```bash
+npm version patch   # 或 minor / major
+npm publish
+```
+
+发布需要具备发布权限的 npm 账号。如果你的账号用的是 WebAuthn / security-key 2FA（没有验证码），命令行无法弹出提示——请在 npmjs.com 生成一个 **granular access token**（Access Tokens → Generate New Token → Permissions: Read and write → Packages: `dsh-git-status`），并配置到用户级 `~/.npmrc`：
+
+```bash
+npm config set //registry.npmjs.org/:_authToken npm_xxxxxxxxxxxxxxxx
+```
 
 ## 开发
 

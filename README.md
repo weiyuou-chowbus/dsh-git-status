@@ -27,22 +27,36 @@ The client fetches `GET /git-status?cwd=…` on mount and every 3s, and `POST`s 
 
 > Requires the DSH web profile. The default web profile lives at `~/.dsh/profiles/web/`.
 
-### 1. Get the source
+### Quick install (recommended)
+
+```bash
+dsh plugin --profile web add dsh-git-status
+```
+
+This installs the package from npm into the profile and reconciles it into the profile's bundle list automatically — the package declares `dsh.bundle`, which is exactly what `dsh plugin add` scans for. It requires [pnpm](https://pnpm.io) on your `PATH` (`dsh plugin` forwards to pnpm inside the profile directory).
+
+Then restart and refresh:
+
+```bash
+npm exec @deepseek-ai/dsh web
+```
+
+Open `http://127.0.0.1:3080`. To pin a default repo, add this to `~/.dsh/profiles/web/cordis.patch.yml` (the bundle already inserts the row; this only overrides its `config`):
+
+```yaml
+- id: git-status
+  config:
+    repoPath: /absolute/path/to/your/default/repo
+```
+
+### Install from source
 
 ```bash
 git clone https://github.com/weiyuou-chowbus/dsh-git-status.git
-# or place the extracted package anywhere, e.g. ~/dsh-git-status
-```
-
-### 2. Link it into your profile's `node_modules`
-
-```bash
 ln -sfn "$(pwd)/dsh-git-status" ~/.dsh/profiles/web/node_modules/dsh-git-status
 ```
 
-### 3. Enable it in `cordis.patch.yml`
-
-Edit `~/.dsh/profiles/web/cordis.patch.yml` and add an `insert` entry:
+Then add the row to `~/.dsh/profiles/web/cordis.patch.yml`:
 
 ```yaml
 # ~/.dsh/profiles/web/cordis.patch.yml
@@ -53,15 +67,9 @@ Edit `~/.dsh/profiles/web/cordis.patch.yml` and add an `insert` entry:
         repoPath: /absolute/path/to/your/default/repo
 ```
 
+Restart with `npm exec @deepseek-ai/dsh web` and refresh `http://127.0.0.1:3080`.
+
 - `repoPath` is the **fallback** repository used when the active session has no workspace `cwd`. If you omit it, the plugin falls back to the DSH process's working directory.
-
-### 4. Restart
-
-```bash
-npm exec @deepseek-ai/dsh web
-```
-
-Then refresh `http://127.0.0.1:3080`.
 
 ## Configuration
 
@@ -85,6 +93,21 @@ The plugin hardens every git invocation and input path:
 - **Branch whitelist** — checkout targets must match a branch enumerated by `git for-each-ref refs/heads` (local branches only). A branch name is never passed to git before this check.
 - **Side effects are POST-only** — the read route accepts only `GET`/`HEAD`; checkout is `POST` and returns `405` otherwise.
 - **Dirty state is blocked by default** — switching with uncommitted changes requires an explicit `stash: true`.
+
+## Publishing
+
+This package is published to npm as [`dsh-git-status`](https://www.npmjs.com/package/dsh-git-status). To release a new version:
+
+```bash
+npm version patch   # or minor / major
+npm publish
+```
+
+Publishing requires an npm account with publish access. If your account uses WebAuthn / security-key 2FA (which has no OTP), the CLI cannot prompt you — generate a **granular access token** on npmjs.com (Access Tokens → Generate New Token → Permissions: Read and write → Packages: `dsh-git-status`) and configure it in your user-level `~/.npmrc`:
+
+```bash
+npm config set //registry.npmjs.org/:_authToken npm_xxxxxxxxxxxxxxxx
+```
 
 ## Development
 
