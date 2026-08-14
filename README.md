@@ -1,5 +1,7 @@
 # dsh-git-status
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 A [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) **web** client plugin that shows the current git branch in the composer tool row and lets you switch branches without leaving the chat UI.
 
 ## Features
