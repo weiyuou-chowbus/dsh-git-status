@@ -1,6 +1,6 @@
 {
   "name": "dsh-git-status",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DSH web composer tool-row git branch indicator with branch switching",
   "type": "module",
   "main": "lib/index.js",
