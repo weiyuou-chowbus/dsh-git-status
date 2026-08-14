@@ -1,0 +1,14 @@
+# dsh-git-status bundle patch: insert the host half as one cordis row.
+#
+# This is the layer `dsh plugin add` reconciles into the profile's
+# `dsh.profile.bundles` list (the package declares `dsh.bundle.patch` pointing
+# here). The host half (lib/index.js) is loaded as a cordis plugin; the
+# client-modules node half then scans this entry's `dsh.client` metadata to
+# compose the browser roster.
+#
+# `repoPath` is intentionally omitted — the plugin falls back to the DSH
+# process cwd. Users pin their own default repo by id in their profile
+# cordis.patch.yml (the last write per row wins).
+- insert:
+    - id: git-status
+      name: dsh-git-status
